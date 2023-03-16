@@ -12,6 +12,8 @@ import WatchVideoPlaylist from '../../components/watch-video-playlist/watch-vide
 import WatchVideoRecommendations from '../../components/watch-video-recommendations/watch-video-recommendations.vue'
 import FtAgeRestricted from '../../components/ft-age-restricted/ft-age-restricted.vue'
 import { pathExists } from '../../helpers/filesystem'
+import dashjs from 'dashjs';
+
 import {
   buildVTTFileLocally,
   copyToClipboard,
@@ -24,6 +26,7 @@ import {
 import {
   filterFormats,
   getLocalVideoInfo,
+  getLocalVideoInfoWithDenoProxy,
   mapLocalFormat,
   parseLocalSubscriberCount,
   parseLocalTextRuns,
@@ -221,11 +224,14 @@ export default defineComponent({
     this.checkIfPlaylist()
     this.checkIfTimestamp()
 
-    if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
-      this.getVideoInformationInvidious()
-    } else {
-      this.getVideoInformationLocal()
-    }
+    // if (!process.env.IS_ELECTRON || this.backendPreference === 'invidious') {
+    //   this.getVideoInformationInvidious()
+    // } else {
+    //   this.getVideoInformationLocal()
+    // }
+
+    // this.getVideoInformationInvidious()
+    this.getLocalVideoInfoWithDenoProxy();
 
     window.addEventListener('beforeunload', this.handleWatchProgress)
   },
@@ -236,7 +242,36 @@ export default defineComponent({
     toggleTheatreMode: function () {
       this.useTheatreMode = !this.useTheatreMode
     },
+    getLocalVideoInfoWithDenoProxy: async function () {
+      let player;
+      let result = await getLocalVideoInfoWithDenoProxy(this.videoId)
+      const dash = await result.toDash((url) => {
+        url.searchParams.set('__host', url.host);
+        url.host = 'deno.flatxcorp.com';
+        url.protocol = 'https';
+        return url;
+      });
 
+      const uri = 'data:application/dash+xml;charset=utf-8;base64,' + btoa(dash);
+
+      // create and append video element
+      const video_element = document.querySelector('video');
+      video_element.setAttribute('controls', 'true');
+      // video_element.poster = info.basic_info.thumbnail![0].url;
+
+      // use dash.js to parse the manifest
+      if (player) {
+        player.destroy();
+      }
+      player = dashjs.MediaPlayer().create();
+      player.initialize(video_element, uri, true);
+      player.setInitialMediaSettingsFor('audio', { lang: 'en-US' });
+
+
+      this.isFamilyFriendly = result.basic_info.is_family_safe  
+
+      this.isLoading = false;
+    },
     getVideoInformationLocal: async function () {
       if (this.firstLoad) {
         this.isLoading = true
@@ -1250,6 +1285,7 @@ export default defineComponent({
 
     createInvidiousDashManifest: function () {
       let url = `${this.currentInvidiousInstance}/api/manifest/dash/id/${this.videoId}`
+
 
       if (!process.env.IS_ELECTRON || this.proxyVideos) {
         url += '?local=true'

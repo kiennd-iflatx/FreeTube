@@ -1,4 +1,4 @@
-import { Innertube, ClientType, Misc, Utils } from 'youtubei.js'
+import { Innertube, ClientType, Misc, Utils, UniversalCache } from 'youtubei.js/web'
 import Autolinker from 'autolinker'
 import { join } from 'path'
 
@@ -39,7 +39,47 @@ async function createInnertube(options = { withPlayer: false, location: undefine
     client_type: options.clientType,
 
     // use browser fetch
-    fetch: (input, init) => fetch(input, init),
+    fetch: async (input, init) => {
+      // url
+      const url = typeof input === 'string'
+        ? new URL(input)
+        : input instanceof URL
+          ? input
+          : new URL(input.url);
+
+      // transform the url for use with our proxy
+      url.searchParams.set('__host', url.host);
+      url.host = 'deno.flatxcorp.com';
+      url.protocol = 'https';
+
+      const headers = init?.headers
+        ? new Headers(init.headers)
+        : input instanceof Request
+          ? input.headers
+          : new Headers();
+
+      // now serialize the headers
+      url.searchParams.set('__headers', JSON.stringify([...headers]));
+
+      // @ts-ignore
+      input.duplex = 'half';
+
+      // copy over the request
+      const request = new Request(
+        url,
+        input instanceof Request ? input : undefined,
+      );
+
+      headers.delete('user-agent');
+
+      // fetch the url
+      return fetch(request, init ? {
+        ...init,
+        headers
+      } : {
+        headers
+      });
+    },
     cache,
     generate_session_locally: true
   })
@@ -143,6 +183,82 @@ export async function getLocalVideoInfo(id, attemptBypass = false) {
   }
 
   return info
+}
+
+export async function getLocalVideoInfoWithDenoProxy(id, attemptBypass = false) {
+  let info
+  let video_id;
+  
+  const yt = await Innertube.create({
+    generate_session_locally: true,
+    fetch: async (input, init) => {
+      // url
+      const url = typeof input === 'string'
+        ? new URL(input)
+        : input instanceof URL
+          ? input
+          : new URL(input.url);
+
+      // transform the url for use with our proxy
+      url.searchParams.set('__host', url.host);
+      url.host = 'deno.flatxcorp.com';
+      url.protocol = 'https';
+
+      const headers = init?.headers
+        ? new Headers(init.headers)
+        : input instanceof Request
+          ? input.headers
+          : new Headers();
+
+      // now serialize the headers
+      url.searchParams.set('__headers', JSON.stringify([...headers]));
+
+      // @ts-ignore
+      input.duplex = 'half';
+
+      // copy over the request
+      const request = new Request(
+        url,
+        input instanceof Request ? input : undefined,
+      );
+
+      headers.delete('user-agent');
+
+      // fetch the url
+      return fetch(request, init ? {
+        ...init,
+        headers
+      } : {
+        headers
+      });
+    },
+    cache: new UniversalCache(false),
+  });
+
+  try {
+    if (id.match(/(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/)) {
+      const endpoint = await yt.resolveURL(id);
+
+      if (!endpoint.payload.videoId) {
+        console.log('Could not resolve URL at getLocalVideoInfoWithDenoProxy');
+        return;
+      }
+
+      video_id = endpoint.payload.videoId;
+    } else {
+      video_id = id;
+    }
+
+    info = await yt.getInfo(video_id);
+    
+    return info;
+  } catch (error) {
+    console.log('An error occurred (see console)');
+    console.error(error);
+  }
+
+  return info
+  
 }
 
 export async function getLocalComments(id, sortByNewest = false) {
