@@ -23,7 +23,10 @@ const IpcChannels = {
   SYNC_SETTINGS: 'sync-settings',
   SYNC_HISTORY: 'sync-history',
   SYNC_PROFILES: 'sync-profiles',
-  SYNC_PLAYLISTS: 'sync-playlists'
+  SYNC_PLAYLISTS: 'sync-playlists',
+  FLATX_PROXY_IP: '68.183.236.72',
+  FLATX_PROXY_PORT: '8080',
+  FLATX_PROXY_PROTOCOL: 'http',
 }
 
 const DBActions = {

@@ -33,6 +33,7 @@ import {
   parseLocalWatchNextVideo
 } from '../../helpers/api/local'
 import { invidiousGetVideoInformation, youtubeImageUrlToInvidious } from '../../helpers/api/invidious'
+import { IpcChannels } from '../../../constants'
 
 export default defineComponent({
   name: 'Watch',
@@ -233,7 +234,6 @@ export default defineComponent({
     //kiennd
     // this.getVideoInformationInvidious()
     this.getVideoInformationLocal()
-    // this.getLocalVideoInfoWithDenoProxy();
 
     window.addEventListener('beforeunload', this.handleWatchProgress)
   },
@@ -248,12 +248,10 @@ export default defineComponent({
       let player;
       let result = await getLocalVideoInfoWithDenoProxy(this.videoId)
 
-      console.log(result);
-
       const dash = await result.toDash((url) => {
         url.searchParams.set('__host', url.host);
-        url.host = 'deno.flatxcorp.com';
-        url.protocol = 'https';
+        url.host = IpcChannels.FLATX_PROXY_IP + ':' + IpcChannels.FLATX_PROXY_PORT;
+        url.protocol = IpcChannels.FLATX_PROXY_PROTOCOL;
         return url;
       });
       
@@ -440,89 +438,9 @@ export default defineComponent({
         }
 
         if ((this.isLive && this.isLiveContent) && !this.isUpcoming) {
-          try {
-            const formats = await getFormatsFromHLSManifest(result.streaming_data.hls_manifest_url)
-
-            this.videoSourceList = formats
-              .sort((formatA, formatB) => {
-                return formatB.height - formatA.height
-              })
-              .map((format) => {
-                return {
-                  url: format.url,
-                  type: 'application/x-mpegURL',
-                  label: 'Dash',
-                  qualityLabel: `${format.height}p`
-                }
-              })
-          } catch (e) {
-            console.error('Failed to extract formats form HLS manifest, falling back to passing it directly to video.js', e)
-
-            this.videoSourceList = [
-              {
-                url: result.streaming_data.hls_manifest_url,
-                type: 'application/x-mpegURL',
-                label: 'Dash',
-                qualityLabel: 'Live'
-              }
-            ]
-          }
-
-          this.showLegacyPlayer = true
-          this.showDashPlayer = false
-          this.activeFormat = 'legacy'
-          this.activeSourceList = this.videoSourceList
+          
         } else if (this.isUpcoming) {
-          const upcomingTimestamp = result.basic_info.start_timestamp
-
-          if (upcomingTimestamp) {
-            const timestampOptions = {
-              month: 'long',
-              day: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit'
-            }
-            const now = new Date()
-            if (now.getFullYear() < upcomingTimestamp.getFullYear()) {
-              Object.defineProperty(timestampOptions, 'year', {
-                value: 'numeric'
-              })
-            }
-            this.upcomingTimestamp = Intl.DateTimeFormat(this.currentLocale, timestampOptions).format(upcomingTimestamp)
-
-            let upcomingTimeLeft = upcomingTimestamp - now
-
-            // Convert from ms to second to minute
-            upcomingTimeLeft = (upcomingTimeLeft / 1000) / 60
-            let timeUnit = 'minute'
-
-            // Youtube switches to showing time left in minutes at 120 minutes remaining
-            if (upcomingTimeLeft > 120) {
-              upcomingTimeLeft /= 60
-              timeUnit = 'hour'
-            }
-
-            if (timeUnit === 'hour' && upcomingTimeLeft > 24) {
-              upcomingTimeLeft /= 24
-              timeUnit = 'day'
-            }
-
-            // Value after decimal not to be displayed
-            // e.g. > 2 days = display as `2 days`
-            upcomingTimeLeft = Math.floor(upcomingTimeLeft)
-
-            // Displays when less than a minute remains
-            // Looks better than `Premieres in x seconds`
-            if (upcomingTimeLeft < 1) {
-              this.upcomingTimeLeft = this.$t('Video.Published.In less than a minute').toLowerCase()
-            } else {
-              // TODO a I18n entry for time format might be needed here
-              this.upcomingTimeLeft = new Intl.RelativeTimeFormat(this.currentLocale).format(upcomingTimeLeft, timeUnit)
-            }
-          } else {
-            this.upcomingTimestamp = null
-            this.upcomingTimeLeft = null
-          }
+          
         } else {
           this.videoLengthSeconds = result.basic_info.duration
           if (result.streaming_data) {
@@ -555,38 +473,7 @@ export default defineComponent({
             })
 
             if (result.captions) {
-              const captionTracks = result.captions.caption_tracks.map((caption) => {
-                return {
-                  url: caption.base_url,
-                  label: caption.name.text,
-                  language_code: caption.language_code,
-                  kind: caption.kind
-                }
-              })
-              if (this.currentLocale) {
-                const noLocaleCaption = !captionTracks.some(track =>
-                  track.language_code === this.currentLocale && track.kind !== 'asr'
-                )
-
-                if (!this.currentLocale.startsWith('en') && noLocaleCaption) {
-                  captionTracks.forEach((caption) => {
-                    this.tryAddingTranslatedLocaleCaption(captionTracks, this.currentLocale, caption.url)
-                  })
-                }
-              }
-
-              this.captionHybridList = this.createCaptionPromiseList(captionTracks)
-
-              const captionLinks = captionTracks.map((caption) => {
-                const label = `${caption.label} (${caption.language_code}) - text/vtt`
-
-                return {
-                  url: caption.url,
-                  label: label
-                }
-              })
-
-              this.downloadLinks = this.downloadLinks.concat(captionLinks)
+              
             }
           } else {
             // video might be region locked or something else. This leads to no formats being available
@@ -633,7 +520,6 @@ export default defineComponent({
             if (this.proxyVideos) {
               this.dashSrc = await this.createInvidiousDashManifest()
             } else {
-              console.log('kiennd start createLocalDashManifest', result)
               // this.dashSrc = await this.createLocalDashManifest(result)
               this.dashSrc = await this.createLocalWithProxyDenoDashManifest(result)
             }
@@ -1299,8 +1185,8 @@ export default defineComponent({
       
       const dash = await videoInfo.toDash((url) => {
         url.searchParams.set('__host', url.host);
-        url.host = 'deno.flatxcorp.com';
-        url.protocol = 'https';
+        url.host = '68.183.236.72:8080';
+        url.protocol = 'http';
         return url;
       });
       const uri = 'data:application/dash+xml;charset=utf-8;base64,' + btoa(dash);

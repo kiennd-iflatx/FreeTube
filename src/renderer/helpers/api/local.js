@@ -10,6 +10,8 @@ import {
   toLocalePublicationString
 } from '../utils'
 
+import { IpcChannels } from '../../../constants'
+
 /**
  * Creates a lightweight Innertube instance, which is faster to create or
  * an instance that can decode the streaming URLs, which is slower to create
@@ -49,8 +51,8 @@ async function createInnertube(options = { withPlayer: false, location: undefine
 
       // transform the url for use with our proxy
       url.searchParams.set('__host', url.host);
-      url.host = 'deno.flatxcorp.com';
-      url.protocol = 'https';
+      url.host = IpcChannels.FLATX_PROXY_IP + ':' + IpcChannels.FLATX_PROXY_PORT;
+      url.protocol = IpcChannels.FLATX_PROXY_PROTOCOL;
 
       const headers = init?.headers
         ? new Headers(init.headers)
@@ -201,8 +203,8 @@ export async function getLocalVideoInfoWithDenoProxy(id, attemptBypass = false) 
 
       // transform the url for use with our proxy
       url.searchParams.set('__host', url.host);
-      url.host = 'deno.flatxcorp.com';
-      url.protocol = 'https';
+      url.host = IpcChannels.FLATX_PROXY_IP + ':' + IpcChannels.FLATX_PROXY_PORT;
+      url.protocol = IpcChannels.FLATX_PROXY_PROTOCOL;
 
       const headers = init?.headers
         ? new Headers(init.headers)
