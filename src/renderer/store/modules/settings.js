@@ -222,7 +222,7 @@ const state = {
   proxyPort: '9050',
   proxyProtocol: 'socks5',
   proxyVideos: false,
-  region: 'US',
+  region: 'VN',
   rememberHistory: true,
   removeVideoMetaFiles: true,
   saveWatchedProgress: true,
@@ -285,9 +285,9 @@ const state = {
 
 const stateWithSideEffects = {
   currentLocale: {
-    defaultValue: 'en-US',
+    defaultValue: 'vi',
     sideEffectsHandler: async function ({ dispatch }, value) {
-      const defaultLocale = 'en-US'
+      const defaultLocale = 'vi'
 
       let targetLocale = value
       if (value === 'system') {
