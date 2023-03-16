@@ -6,7 +6,7 @@ static/dashFiles
 static/storyboards
 static/dashFiles/*
 static/storyboards/*
-dist/web/*
+
 build/*
 !build/icons
 coverage
@@ -19,7 +19,7 @@ data/tmp/
 .tmp/
 tmp/
 .cache
-dist
+
 coverage
 __coverage__
 csak-timelog.json
