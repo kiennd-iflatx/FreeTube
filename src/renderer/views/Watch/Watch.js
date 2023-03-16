@@ -89,7 +89,7 @@ export default defineComponent({
       videoPublished: 0,
       videoStoryboardSrc: '',
       audioUrl: '',
-      dashSrc: [],
+      dashSrc: '',
       activeSourceList: [],
       videoSourceList: [],
       audioSourceList: [],
@@ -276,7 +276,6 @@ export default defineComponent({
     },
     getVideoInformationLocal: async function () {
       //kiennd
-      console.log('getVideoInformationLocal');
       if (this.firstLoad) {
         this.isLoading = true
       }
@@ -1180,9 +1179,8 @@ export default defineComponent({
       ]
     },
 
-    createLocalWithProxyDenoDashManifest: async function (videoInfo) {
-      console.log('createLocalWithProxyDenoDashManifest');
-      
+    createLocalWithProxyDenoDashManifest: async function (videoInfo) {  
+      // kiennd
       const dash = await videoInfo.toDash((url) => {
         url.searchParams.set('__host', url.host);
         url.host = IpcChannels.FLATX_PROXY_IP ;
@@ -1190,6 +1188,7 @@ export default defineComponent({
         return url;
       });
       const uri = 'data:application/dash+xml;charset=utf-8;base64,' + btoa(dash);
+      return uri;
       return [
         {
           url: uri,

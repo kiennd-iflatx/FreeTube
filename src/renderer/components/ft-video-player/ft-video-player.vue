@@ -20,14 +20,7 @@
       crossorigin="anonymous"
       @touchstart="handleTouchStart"
     >
-      <source
-        v-for="(source, index) in activeSourceList"
-        :key="index + '_source'"
-        :src="source.url"
-        :type="source.type || source.mimeType"
-        :label="source.qualityLabel"
-        :selected="source.qualityLabel === selectedDefaultQuality"
-      >
+     
     </video>
   </div>
 </template>

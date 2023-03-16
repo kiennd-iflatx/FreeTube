@@ -44,7 +44,7 @@ export default defineComponent({
       default: () => { return [] }
     },
     dashSrc: {
-      type: Array,
+      type: String,
       default: null
     },
     hlsSrc: {
@@ -496,6 +496,13 @@ export default defineComponent({
             this.transformAndInsertCaptions()
           }
           this.toggleScreenshotButton()
+
+          // kiennd
+
+          this.player.src({
+            src: this.dashSrc,
+            type: 'application/dash+xml'
+          });
         })
 
         this.player.one('loadedmetadata', () => {
@@ -595,7 +602,8 @@ export default defineComponent({
             this.toggleShowStatsModal()
           })
         }
-      }
+      }      
+      // kiennd 
     },
 
     initializeSponsorBlock() {
