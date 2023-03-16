@@ -10,6 +10,10 @@
   grid-template: 'video' auto 'info' auto 'sidebar' auto / auto;
 }
 
+.dnone{
+  display: none;
+}
+
 .ageRestricted {
   @include single-column-template;
 

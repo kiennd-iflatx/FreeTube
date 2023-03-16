@@ -197,7 +197,6 @@ export default defineComponent({
     enterFullscreenOnDisplayRotate: function() {
       return this.$store.getters.getEnterFullscreenOnDisplayRotate
     },
-
     sponsorSkips: function () {
       const sponsorCats = ['sponsor',
         'selfpromo',
@@ -304,7 +303,7 @@ export default defineComponent({
       this.toggleScreenshotButton()
     }
   },
-  mounted: function () {
+  mounted: function () {    
     const volume = sessionStorage.getItem('volume')
     const muted = sessionStorage.getItem('muted')
 

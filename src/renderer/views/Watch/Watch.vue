@@ -16,8 +16,27 @@
       class="videoArea"
     >
       <div class="videoAreaMargin">
-        <video id="video" class="ftVideoPlayer video-js vjs-default-skin dark"></video>
-        
+        <ft-video-player
+          v-if="!isLoading && !hidePlayer && !isUpcoming"
+          ref="videoPlayer"
+          :dash-src="dashSrc"
+          :source-list="activeSourceList"
+          :adaptive-formats="adaptiveFormats"
+          :caption-hybrid-list="captionHybridList"
+          :storyboard-src="videoStoryboardSrc"
+          :format="activeFormat"
+          :thumbnail="thumbnail"
+          :video-id="videoId"
+          :length-seconds="videoLengthSeconds"
+          :chapters="videoChapters"
+          class="videoPlayer"
+          :class="{ theatrePlayer: useTheatreMode }"
+          @ready="checkIfWatched"
+          @ended="handleVideoEnded"
+          @error="handleVideoError"
+          @store-caption-list="captionHybridList = $event"
+          v-on="!hideChapters && videoChapters.length > 0 ? { timeupdate: updateCurrentChapter } : {}"
+        />
         
         <div
           v-if="!isLoading && isUpcoming"

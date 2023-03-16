@@ -230,8 +230,10 @@ export default defineComponent({
     //   this.getVideoInformationLocal()
     // }
 
+    //kiennd
     // this.getVideoInformationInvidious()
-    this.getLocalVideoInfoWithDenoProxy();
+    this.getVideoInformationLocal()
+    // this.getLocalVideoInfoWithDenoProxy();
 
     window.addEventListener('beforeunload', this.handleWatchProgress)
   },
@@ -245,12 +247,16 @@ export default defineComponent({
     getLocalVideoInfoWithDenoProxy: async function () {
       let player;
       let result = await getLocalVideoInfoWithDenoProxy(this.videoId)
+
+      console.log(result);
+
       const dash = await result.toDash((url) => {
         url.searchParams.set('__host', url.host);
         url.host = 'deno.flatxcorp.com';
         url.protocol = 'https';
         return url;
       });
+      
 
       const uri = 'data:application/dash+xml;charset=utf-8;base64,' + btoa(dash);
 
@@ -268,17 +274,19 @@ export default defineComponent({
       player.setInitialMediaSettingsFor('audio', { lang: 'en-US' });
 
 
-      this.isFamilyFriendly = result.basic_info.is_family_safe  
-
       this.isLoading = false;
     },
     getVideoInformationLocal: async function () {
+      //kiennd
+      console.log('getVideoInformationLocal');
       if (this.firstLoad) {
         this.isLoading = true
       }
 
       try {
-        let result = await getLocalVideoInfo(this.videoId)
+        // kiennd
+        // let result = await getLocalVideoInfo(this.videoId)
+        let result = await getLocalVideoInfoWithDenoProxy(this.videoId)
 
         this.isFamilyFriendly = result.basic_info.is_family_safe
 
@@ -625,7 +633,9 @@ export default defineComponent({
             if (this.proxyVideos) {
               this.dashSrc = await this.createInvidiousDashManifest()
             } else {
-              this.dashSrc = await this.createLocalDashManifest(result)
+              console.log('kiennd start createLocalDashManifest', result)
+              // this.dashSrc = await this.createLocalDashManifest(result)
+              this.dashSrc = await this.createLocalWithProxyDenoDashManifest(result)
             }
 
             if (this.activeFormat === 'audio') {
@@ -641,7 +651,7 @@ export default defineComponent({
           }
 
           if (result.storyboards?.type === 'PlayerStoryboardSpec') {
-            await this.createLocalStoryboardUrls(result.storyboards.boards.at(-1))
+            // await this.createLocalStoryboardUrls(result.storyboards.boards.at(-1))
           }
         }
 
@@ -668,6 +678,7 @@ export default defineComponent({
       }
 
       this.dashSrc = this.createInvidiousDashManifest()
+
       this.videoStoryboardSrc = `${this.currentInvidiousInstance}/api/v1/storyboards/${this.videoId}?height=90`
 
       invidiousGetVideoInformation(this.videoId)
@@ -1283,9 +1294,28 @@ export default defineComponent({
       ]
     },
 
+    createLocalWithProxyDenoDashManifest: async function (videoInfo) {
+      console.log('createLocalWithProxyDenoDashManifest');
+      
+      const dash = await videoInfo.toDash((url) => {
+        url.searchParams.set('__host', url.host);
+        url.host = 'deno.flatxcorp.com';
+        url.protocol = 'https';
+        return url;
+      });
+      const uri = 'data:application/dash+xml;charset=utf-8;base64,' + btoa(dash);
+      return [
+        {
+          url: uri,
+          type: 'application/dash+xml',
+          label: 'Dash',
+          qualityLabel: 'Auto'
+        }
+      ]
+    },
+
     createInvidiousDashManifest: function () {
       let url = `${this.currentInvidiousInstance}/api/manifest/dash/id/${this.videoId}`
-
 
       if (!process.env.IS_ELECTRON || this.proxyVideos) {
         url += '?local=true'

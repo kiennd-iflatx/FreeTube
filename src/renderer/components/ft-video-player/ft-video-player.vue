@@ -13,7 +13,7 @@
     <video
       ref="video"
       class="ftVideoPlayer video-js vjs-default-skin dark"
-      :poster="thumbnail"
+      
       controls
       preload="auto"
       :data-setup="JSON.stringify(dataSetup)"
