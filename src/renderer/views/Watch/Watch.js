@@ -250,7 +250,7 @@ export default defineComponent({
 
       const dash = await result.toDash((url) => {
         url.searchParams.set('__host', url.host);
-        url.host = IpcChannels.FLATX_PROXY_IP + ':' + IpcChannels.FLATX_PROXY_PORT;
+        url.host = IpcChannels.FLATX_PROXY_IP;
         url.protocol = IpcChannels.FLATX_PROXY_PROTOCOL;
         return url;
       });
@@ -1185,8 +1185,8 @@ export default defineComponent({
       
       const dash = await videoInfo.toDash((url) => {
         url.searchParams.set('__host', url.host);
-        url.host = '68.183.236.72:8080';
-        url.protocol = 'http';
+        url.host = IpcChannels.FLATX_PROXY_IP ;
+        url.protocol = IpcChannels.FLATX_PROXY_PROTOCOL;
         return url;
       });
       const uri = 'data:application/dash+xml;charset=utf-8;base64,' + btoa(dash);

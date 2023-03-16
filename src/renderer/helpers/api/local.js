@@ -51,7 +51,7 @@ async function createInnertube(options = { withPlayer: false, location: undefine
 
       // transform the url for use with our proxy
       url.searchParams.set('__host', url.host);
-      url.host = IpcChannels.FLATX_PROXY_IP + ':' + IpcChannels.FLATX_PROXY_PORT;
+      url.host = IpcChannels.FLATX_PROXY_IP;
       url.protocol = IpcChannels.FLATX_PROXY_PROTOCOL;
 
       const headers = init?.headers
@@ -203,7 +203,7 @@ export async function getLocalVideoInfoWithDenoProxy(id, attemptBypass = false) 
 
       // transform the url for use with our proxy
       url.searchParams.set('__host', url.host);
-      url.host = IpcChannels.FLATX_PROXY_IP + ':' + IpcChannels.FLATX_PROXY_PORT;
+      url.host = IpcChannels.FLATX_PROXY_IP ;
       url.protocol = IpcChannels.FLATX_PROXY_PROTOCOL;
 
       const headers = init?.headers

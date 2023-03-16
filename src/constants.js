@@ -24,9 +24,9 @@ const IpcChannels = {
   SYNC_HISTORY: 'sync-history',
   SYNC_PROFILES: 'sync-profiles',
   SYNC_PLAYLISTS: 'sync-playlists',
-  FLATX_PROXY_IP: '68.183.236.72',
-  FLATX_PROXY_PORT: '8080',
-  FLATX_PROXY_PROTOCOL: 'http',
+  FLATX_PROXY_IP: 'deno.flatxcorp.com',
+  FLATX_PROXY_PORT: '',
+  FLATX_PROXY_PROTOCOL: 'https',
 }
 
 const DBActions = {
