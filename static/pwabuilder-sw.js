@@ -76,13 +76,13 @@ self.addEventListener('fetch', function (event) {
   if (comparePaths(event.request.url, networkFirstPaths)) {
     networkFirstFetch(event)
   } else {
-    cacheFirstFetch(event)
+    // cacheFirstFetch(event)
   }
 })
 
 function cacheFirstFetch(event) {
   event.respondWith(
-    fromCache(event.request).then(
+    fromCache (event.request).then(
       function (response) {
         // The response was found in the cache so we respond with it and update the entry
 

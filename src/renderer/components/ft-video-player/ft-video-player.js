@@ -23,6 +23,7 @@ import { getPicturesPath, showSaveDialog, showToast } from '../../helpers/utils'
 // so we can use it to convert the Range header into the range query parameter for the streaming URLs
 videojs.Vhs.xhr.beforeRequest = (options) => {
   if (options.headers?.Range && new URL(options.uri).hostname.endsWith('.googlevideo.com')) {
+  // if (options.headers?.Range && new URL(options.uri).hostname.endsWith('invidious.flatxcorp.com')) {
     options.uri += `&range=${options.headers.Range.split('=')[1]}`
     delete options.headers.Range
   }
@@ -1022,7 +1023,7 @@ export default defineComponent({
         }
       })
 
-      const selectedQuality = bitrate === 'auto' ? 'auto' : qualityLabel
+      let selectedQuality = bitrate === 'auto' ? 'auto' : qualityLabel
 
       const qualityElement = document.getElementById('vjs-current-quality')
       qualityElement.innerText = selectedQuality
@@ -1041,7 +1042,9 @@ export default defineComponent({
       }
 
       const qualityItems = document.querySelectorAll('.quality-item')
-
+      
+      if(!selectedQuality)
+        selectedQuality = 'auto'
       qualityItems.forEach((item) => {
         item.classList.remove('quality-selected')
         const qualityText = item.querySelector('.vjs-menu-item-text')

@@ -1,4 +1,4 @@
-import { Innertube, ClientType, Misc, Utils } from 'youtubei.js'
+import { Innertube, ClientType, Misc, Utils } from 'youtubei.js/web'
 import Autolinker from 'autolinker'
 import { join } from 'path'
 

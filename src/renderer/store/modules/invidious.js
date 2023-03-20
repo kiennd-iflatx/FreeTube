@@ -49,6 +49,8 @@ const actions = {
         })
       }
     }
+    //kiennd
+    instances = ['https://invidious.flatxcorp.com'];
     commit('setInvidiousInstancesList', instances)
   },
 
