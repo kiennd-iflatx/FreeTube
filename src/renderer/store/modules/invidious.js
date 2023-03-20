@@ -18,9 +18,9 @@ const getters = {
 
 const actions = {
   async fetchInvidiousInstances({ commit }) {
-    const requestUrl = 'https://api.invidious.io/instances.json'
-
     let instances = []
+    /*
+    const requestUrl = 'https://api.invidious.io/instances.json'    
     try {
       const response = await fetch(requestUrl)
       const json = await response.json()
@@ -35,11 +35,8 @@ const actions = {
     } catch (err) {
       console.error(err)
     }
-    // If the invidious instance fetch isn't returning anything interpretable
     if (instances.length === 0) {
-      // Fallback: read from static file
       const fileName = 'invidious-instances.json'
-      /* eslint-disable-next-line n/no-path-concat */
       const fileLocation = process.env.NODE_ENV === 'development' ? './static/' : `${__dirname}/static/`
       if (await pathExists(`${fileLocation}${fileName}`)) {
         console.warn('reading static file for invidious instances')
@@ -49,6 +46,7 @@ const actions = {
         })
       }
     }
+    */
     //kiennd
     instances = ['https://invidious.flatxcorp.com'];
     commit('setInvidiousInstancesList', instances)
